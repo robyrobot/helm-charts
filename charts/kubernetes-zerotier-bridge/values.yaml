@@ -1,4 +1,4 @@
-environment: "dummy"
+environment: "test"
 
 zerotier_config:
   zerotier_network_id: "8........f,"
