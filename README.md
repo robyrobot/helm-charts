@@ -14,9 +14,9 @@ If you had already added this repo earlier, run `helm repo update` to retrieve
 the latest versions of the packages.  
 You can then run `helm search repo robyrobot` to see the charts.
 
-For example if you wish to install the zerotier-bridge chart:
+For example if you wish to install the kubernetes-zerotier-bridge chart:
 
-    helm install my-zerotier-bridge robyrobot/zerotier-bridge
+    helm install my-zerotier-bridge robyrobot/kubernetes-zerotier-bridge
 
 To uninstall the chart:
 
