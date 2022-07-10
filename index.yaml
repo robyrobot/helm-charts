@@ -10,4 +10,15 @@ entries:
     urls:
     - https://github.com/robyrobot/helm-charts/releases/download/kubernetes-zerotier-bridge-0.1.1/kubernetes-zerotier-bridge-0.1.1.tgz
     version: 0.1.1
-generated: "2022-03-02T17:38:33.849326903Z"
+  postgresql-migration:
+  - apiVersion: v2
+    appVersion: v5.6.0-nj-1
+    created: "2022-07-10T18:46:12.474454217Z"
+    description: An Helm chart that uses a Bucardo image to allow database migrations
+    digest: eaba2aa07fc76f1e5fef211cacd8ab61fb3bd370f4b4b7c6d94eea3c264cf042
+    name: postgresql-migration
+    type: application
+    urls:
+    - https://github.com/robyrobot/helm-charts/releases/download/postgresql-migration-0.1.0/postgresql-migration-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-07-10T18:46:12.474469717Z"
