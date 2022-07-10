@@ -1,0 +1,84 @@
+# Default values for postgresql-migration.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: ghcr.io/robyrobot/bucardo_docker_image
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v5.6.0-nj-1"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# bucardo configuration for replication
+bucardo: {}
+  # sources:
+  #   - dbname: test1
+  #     dbuser: test
+  #     dbpass: test
+  #     dbhost: host1.example.com
+  #     dbport: 5432
+    
+  # targets:
+  #   - dbname: test2
+  #     dbuser: test
+  #     dbpass: test
+  #     dbhost: host2.example.com
+  #     dbport: 5432
+
+  # syncs:
+  #   - name: test_sync
+  #     sources: 
+  #     - test1
+  #     targets: 
+  #     - test2
+  #     onetimecopy: # ref: https://bucardo.org/Bucardo/operations/onetimecopy
+  # 
+  ## Experimental feature that automatically add a primary key to sources and targets tables that do not have it.
+  # fixMissingPrimaryKey: 
+  #   enabled: true
+  #
+  ## Primary key name. Default is __PK__
+  #   primaryKey: __PK__ 
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "postgresql-migration.fullname" . }}
+  labels:
+    {{- include "postgresql-migration.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "postgresql-migration.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "postgresql-migration.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "postgresql-migration.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-bucardo
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: PGPASSFILE
+            value: /media/bucardo/.pgpass
+          livenessProbe: 
+             exec:
+              command:
+                - cat
+                - /media/bucardo/bucardo.sh
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /media/bucardo/bucardo.sh
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /media/bucardo/.pgpass
+              subPath: .pgpass
+              name: secret            
+          volumeMounts:
+            - name: working
+              mountPath: /media/bucardo/
+      initContainers:
+        - name: copy
+          image: busybox
+          command: 
+            - sh
+            - -c
+            - |
+                cp /config/bucardo.sh /media/bucardo/
+                cp /config/.pgpass /media/bucardo/
+                chown 101 /media/bucardo/.pgpass
+                chmod 600 /media/bucardo/.pgpass
+          
+          volumeMounts:
+          - mountPath: /config/bucardo.sh
+            subPath: bucardo.sh
+            name: config
+          - mountPath: /config/.pgpass
+            subPath: .pgpass
+            name: secret
+          - mountPath: /media/bucardo/
+            name: working
+      volumes:
+        - name: working
+          emptyDir: {} 
+        - name: config
+          configMap:
+            name: {{ include "postgresql-migration.fullname" . }}-configmap
+        - name: secret
+          secret:
+            secretName: {{ include "postgresql-migration.fullname" . }}-secret
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
