@@ -26,3 +26,4 @@ NOTE: remember to create a value.yaml replacing zerotier config value with the c
 
 ## Helm charts list
 * **[Kubernetes-zerotier-bridge](https://github.com/robyrobot/helm-charts/tree/main/charts/kubernetes-zerotier-bridge)**
+* **[postgresql-migration](https://github.com/robyrobot/helm-charts/tree/main/charts/postgresql-migration)**
