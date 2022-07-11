@@ -10,11 +10,11 @@ function clean() {
 }
 
 {{- $fix := $.Values.bucardo.fixMissingPrimaryKey.enabled }}
-{{- $primaryKey := $.Values.bucardo.fixMissingPrimaryKey.primaryKey}}
+{{- $primaryKey := $.Values.bucardo.fixMissingPrimaryKey.primaryKey | default "__PK__"}}
 {{- range concat .Values.bucardo.sources .Values.bucardo.targets }}
 {{- if $fix }}
 # try to fix tables with missing primary key
-T_TABLES=($(psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -At --csv <<EOF | awk -F, '{print $1"."$2}' 
+T_TABLES=($(psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -At --csv <<EOF | awk -F, '{print "\"" $1 "\"" "." $2}' 
   select tbl.table_schema, 
         tbl.table_name
   from information_schema.tables tbl
@@ -28,7 +28,7 @@ EOF
   ))
 
   for i in "${T_TABLES[@]}"; do
-    echo "add primary key {{ primaryKey }} to table [$i] in database [{{ .dbname }}]"
+    echo "add primary key {{ $primaryKey }} to table [$i] in database [{{ .dbname }}]"
     psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -At <<EOF
       ALTER TABLE $i ADD COLUMN {{ $primaryKey }} SERIAL PRIMARY KEY;
 EOF
