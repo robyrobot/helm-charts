@@ -3,17 +3,13 @@ set -euo pipefail
 
 # This script has benn generated automatically 
 
-trap "clean" EXIT
-
-function clean() {
-  bucardo stop
-}
-
 {{- $fix := $.Values.bucardo.fixMissingPrimaryKey.enabled }}
 {{- $primaryKey := $.Values.bucardo.fixMissingPrimaryKey.primaryKey | default "__PK__"}}
 {{- range concat .Values.bucardo.sources .Values.bucardo.targets }}
 {{- if $fix }}
 # try to fix tables with missing primary key
+echo "[i] try to fix tables with missing primary key"
+export PGPASSFILE=/media/bucardo/.pgpass
 T_TABLES=($(psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -At --csv <<EOF | awk -F, '{print "\"" $1 "\"" "." $2}' 
   select tbl.table_schema, 
         tbl.table_name
@@ -25,20 +21,22 @@ T_TABLES=($(psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d
                     where kcu.table_name = tbl.table_name 
                       and kcu.table_schema = tbl.table_schema)
 EOF
-  ))
+))
 
-  for i in "${T_TABLES[@]}"; do
+ for i in "${T_TABLES[@]}"; do
     echo "add primary key {{ $primaryKey }} to table [$i] in database [{{ .dbname }}]"
     psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -At <<EOF
       ALTER TABLE $i ADD COLUMN {{ $primaryKey }} SERIAL PRIMARY KEY;
 EOF
+  
   done
-{{- end }} # if
+
+{{- end }}
 
 # adding databases
 bucardo add database {{ .dbname }} dbname="{{ .dbname }}" dbuser="{{ .dbuser }}"
 
-{{- end }} # range
+{{- end }} 
 
 # adding tables and sequences for sources database
 {{- range .Values.bucardo.sources }}
