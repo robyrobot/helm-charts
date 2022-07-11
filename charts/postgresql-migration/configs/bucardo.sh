@@ -33,7 +33,6 @@ EOF
       ALTER TABLE $i ADD COLUMN {{ $primaryKey }} SERIAL PRIMARY KEY;
 EOF
   done
-done
 {{- end }} # if
 
 # adding databases
