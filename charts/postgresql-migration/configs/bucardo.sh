@@ -38,12 +38,12 @@ bucardo start
       {{- if .copyBlobs }}
       pg_dump -v --clean --if-exists --no-privileges --blobs --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc > {{ $source.name }}.sql 
       info "restore {{ $source.dbname }} -> {{ .dbname }} with data and blobs"
-      pg_restore -v --clean --if-exists --no-privileges --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc < {{ $source.name }}.sql
+      pg_restore -v --clean --if-exists --no-privileges --no-comments --no-owner -N bucardo --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -Fc < {{ $source.name }}.sql
 
       {{- else }}  
       pg_dump -v --clean --if-exists --no-privileges --schema-only --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc > {{ $source.name }}.sql
       info "restore {{ $source.dbname }} -> {{ .dbname }} schema only"
-      pg_restore -v --clean --if-exists --no-privileges --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc < {{ $source.name }}.sql
+      pg_restore -v --clean --if-exists --no-privileges --no-comments --no-owner -N bucardo --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -Fc < {{ $source.name }}.sql
 
       {{- end }}
       
