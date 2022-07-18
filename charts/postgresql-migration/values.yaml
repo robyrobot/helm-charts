@@ -14,33 +14,41 @@ fullnameOverride: ""
 
 # bucardo configuration for replication
 bucardo: {}
-  # sources:
-  #   - dbname: test1
-  #     dbuser: test
-  #     dbpass: test
-  #     dbhost: host1.example.com
-  #     dbport: 5432
-    
-  # targets:
-  #   - dbname: test2
-  #     dbuser: test
-  #     dbpass: test
-  #     dbhost: host2.example.com
-  #     dbport: 5432
-
+  # # if enabled use debug for bucardo logs
+  # debug: true
+  # gracePeriodSec: 120
   # syncs:
-  #   - name: test_sync
-  #     sources: 
-  #     - test1
-  #     targets: 
-  #     - test2
-  #     onetimecopy: # ref: https://bucardo.org/Bucardo/operations/onetimecopy
+  #   - name: test1
+  #     onetimecopy: 1 # ref: https://bucardo.org/Bucardo/operations/onetimecopy
+  #     sources:
+  #     - name: test1        
+  #       dbname: test1
+  #       dbhost: host1.example.com
+  #       dbuser: postgres
+  #       dbpass: password
+  #       includeTables: [] # list of tables to include (can be used pg_dump wildcard)
+  #       excludeTables: [] # list of tables to exclude (can be used pg_dump wildcard)
+  #     targets:
+  #     - name: target1
+  #       dbname: target1
+  #       dbhost: host2.example.com
+  #       dbuser: postgres
+  #       dbpass: password
+  #       # if enabled it will DROP ALL THE TABLES into ANY TARGET DATABASES and then recteate them from the relative source db defined into sync
+  #       # this ensure the source and target db has the same schema.
+  #       cleanDb: true
+  #       postAction:
+  #         # execute some init script needed for the replication. Usually after a db clean
+  #         enabled: true
+  #         script: |
+  #           -- SQL commands if needed
   # 
-  ## Experimental feature that automatically add a primary key to sources and targets tables that do not have it.
+  # # Experimental feature that automatically add a primary key to sources and targets tables that do not have it.
+  # # The column can be safely dropped after the migration complete.
   # fixMissingPrimaryKey: 
   #   enabled: true
   #
-  ## Primary key name. Default is __PK__
+  # # Primary key name. Default is __PK__
   #   primaryKey: __PK__ 
 
 serviceAccount:

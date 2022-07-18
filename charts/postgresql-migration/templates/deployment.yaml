@@ -31,16 +31,31 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PGPASSFILE
+              value: /media/bucardo/.pgpass
           livenessProbe: 
-             exec:
-              command:
-                - cat
-                - /media/bucardo/bucardo.sh
-          readinessProbe:
+            initialDelaySeconds: 120
+            periodSeconds: 20
             exec:
               command:
-                - cat
-                - /media/bucardo/bucardo.sh
+                - cat 
+                - /var/run/bucardo/bucardo.mcp.pid
+          readinessProbe:
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            exec:
+              command:
+                - cat 
+                - /var/run/bucardo/bucardo.mcp.pid
+          lifecycle:
+            preStop:
+              exec:
+                command: 
+                - /bin/bash
+                - -c
+                - /media/bucardo/stopHook.sh
+                  
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -50,6 +65,7 @@ spec:
           volumeMounts:
             - name: working
               mountPath: /media/bucardo/
+      terminationGracePeriodSeconds: {{ .Values.bucardo.gracePeriodSec | default 60 }}
       initContainers:
         - name: copy
           image: busybox
@@ -57,7 +73,11 @@ spec:
             - sh
             - -c
             - |
-                cp /config/bucardo.sh /media/bucardo/
+                # copy scripts
+                cp /config/*.sh /media/bucardo/
+                chmod +x /media/bucardo/*.sh
+
+                # copy pgpass
                 cp /config/.pgpass /media/bucardo/
                 chown 101 /media/bucardo/.pgpass
                 chmod 600 /media/bucardo/.pgpass
@@ -65,6 +85,9 @@ spec:
           volumeMounts:
           - mountPath: /config/bucardo.sh
             subPath: bucardo.sh
+            name: config
+          - mountPath: /config/stopHook.sh
+            subPath: stopHook.sh
             name: config
           - mountPath: /config/.pgpass
             subPath: .pgpass
