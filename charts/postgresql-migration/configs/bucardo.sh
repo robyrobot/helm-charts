@@ -25,29 +25,29 @@ function info() {
 bucardo set log_level=debug
 {{- end }}
 
-info "start bucardo"
-bucardo start 
-
 {{- range .Values.bucardo.syncs }}
   {{ $source := index .sources 0 }}
   # for each target restore the db using source schema one
   {{- range .targets }}
-    {{- if .cleanDb }}
+    {{- if .overwrite.enabled }}
+      info "drop schemas for {{ .dbname }}"      
+      psql -v ON_ERROR_STOP=1 --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" <<EOF
+      {{- range  .overwrite.schemas }}
+      DROP SCHEMA IF EXISTS "{{ . }}" CASCADE;
+      CREATE SCHEMA IF NOT EXISTS "{{ . }}";
+      {{- end }}
+EOF
       # pgdump source db
       info "dump {{ $source.dbname }}"
-      {{- if .copyBlobs }}
-      pg_dump -v --clean --if-exists --no-privileges --blobs --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc > {{ $source.name }}.sql 
-      info "restore {{ $source.dbname }} -> {{ .dbname }} with data and blobs"
-      pg_restore -v --clean --if-exists --no-privileges --no-comments --no-owner -N bucardo --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -Fc < {{ $source.name }}.sql
-
+      {{- if .overwrite.dumpBlobs }}
+        pg_dump -v --no-privileges --blobs --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc > {{ $source.name }}.bck
+        info "restore {{ $source.dbname }} -> {{ .dbname }} with data and blobs"
+        pg_restore -v --no-privileges --no-comments --no-owner -N bucardo --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -Fc < {{ $source.name }}.bck
       {{- else }}  
-      pg_dump -v --clean --if-exists --no-privileges --schema-only --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc > {{ $source.name }}.sql
-      info "restore {{ $source.dbname }} -> {{ .dbname }} schema only"
-      pg_restore -v --clean --if-exists --no-privileges --no-comments --no-owner -N bucardo --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -Fc < {{ $source.name }}.sql
-
+        pg_dump -v --no-privileges --schema-only --no-comments --no-owner -N bucardo --host "{{ $source.dbhost }}" -U "{{ $source.dbuser }}" -d "{{ $source.dbname }}" -Fc > {{ $source.name }}.bck
+        info "restore {{ $source.dbname }} -> {{ .dbname }} schema only"
+        pg_restore -v --no-privileges --no-comments --no-owner -N bucardo --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" -Fc < {{ $source.name }}.bck
       {{- end }}
-      
-      #psql -v ON_ERROR_STOP=1 --echo-all --echo-queries --echo-hidden --echo-errors --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" < {{ $source.name }}.sql
     {{- else }}
       info "no clean required for {{ .dbname }}"
     {{- end }}
@@ -131,7 +131,8 @@ EOF
   {{- end }}
 {{- end }}
 
-#tail -f /var/log/bucardo/log.bucardo
+info "start bucardo"
+bucardo start 
 
 while [ true ]; do
   bucardo status

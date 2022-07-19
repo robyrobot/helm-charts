@@ -35,19 +35,17 @@ spec:
             - name: PGPASSFILE
               value: /media/bucardo/.pgpass
           livenessProbe: 
-            initialDelaySeconds: 120
-            periodSeconds: 20
+            initialDelaySeconds: 5
+            periodSeconds: 10
             exec:
               command:
-                - cat 
-                - /var/run/bucardo/bucardo.mcp.pid
+                - pg_isready
           readinessProbe:
-            initialDelaySeconds: 120
-            periodSeconds: 20
+            initialDelaySeconds: 5
+            periodSeconds: 10
             exec:
               command:
-                - cat 
-                - /var/run/bucardo/bucardo.mcp.pid
+                - pg_isready
           lifecycle:
             preStop:
               exec:

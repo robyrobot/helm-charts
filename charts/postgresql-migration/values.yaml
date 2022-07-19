@@ -34,9 +34,13 @@ bucardo: {}
   #       dbhost: host2.example.com
   #       dbuser: postgres
   #       dbpass: password
-  #       # if enabled it will DROP ALL THE TABLES into ANY TARGET DATABASES and then recteate them from the relative source db defined into sync
+  #       # if enabled overwrite the target database with a dump from the source dropping all the specified schemas
   #       # this ensure the source and target db has the same schema.
-  #       cleanDb: true
+  #       overwrite: 
+  #          enabled: true
+  #          dumpBlobs: true # if true, it will copy source data too
+  #          schemas:
+  #            - public
   #       postAction:
   #         # execute some init script needed for the replication. Usually after a db clean
   #         enabled: true
