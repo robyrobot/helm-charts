@@ -1,0 +1,12 @@
+This chart starts a Bucardo replication based on the configuration provided into the values.yaml
+Some hacks are needed to allow Bucardo to operate, so the chart deploy a pod that do some magics about source database:
+* create primary key for table that not provide one
+* a preStopHook to clean the bucardo schema and removing the auto-generated primary keys
+
+stop the replication with:
+
+helm -n {{ .Release.Namespace }} uninstall {{ .Release.Name }}
+
+Comments, ideas and critics are welcome ;)
+
+Happy helming!

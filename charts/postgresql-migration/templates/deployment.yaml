@@ -31,9 +31,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: PGPASSFILE
-              value: /media/bucardo/.pgpass
           livenessProbe: 
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -57,10 +54,6 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /media/bucardo/.pgpass
-              subPath: .pgpass
-              name: secret            
-          volumeMounts:
             - name: working
               mountPath: /media/bucardo/
       terminationGracePeriodSeconds: {{ .Values.bucardo.gracePeriodSec | default 60 }}
@@ -74,11 +67,6 @@ spec:
                 # copy scripts
                 cp /config/*.sh /media/bucardo/
                 chmod +x /media/bucardo/*.sh
-
-                # copy pgpass
-                cp /config/.pgpass /media/bucardo/
-                chown 101 /media/bucardo/.pgpass
-                chmod 600 /media/bucardo/.pgpass
           
           volumeMounts:
           - mountPath: /config/bucardo.sh
@@ -87,9 +75,6 @@ spec:
           - mountPath: /config/stopHook.sh
             subPath: stopHook.sh
             name: config
-          - mountPath: /config/.pgpass
-            subPath: .pgpass
-            name: secret
           - mountPath: /media/bucardo/
             name: working
       volumes:
@@ -98,10 +83,7 @@ spec:
         - name: config
           configMap:
             name: {{ include "postgresql-migration.fullname" . }}-configmap
-        - name: secret
-          secret:
-            secretName: {{ include "postgresql-migration.fullname" . }}-secret
-
+        
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
