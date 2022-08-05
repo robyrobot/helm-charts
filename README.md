@@ -25,5 +25,6 @@ To uninstall the chart:
 NOTE: remember to create a value.yaml replacing zerotier config value with the correct ones 
 
 ## Helm charts list
-* **[Kubernetes-zerotier-bridge](https://github.com/robyrobot/helm-charts/tree/main/charts/kubernetes-zerotier-bridge)**
+* **[kubernetes-zerotier-bridge](https://github.com/robyrobot/helm-charts/tree/main/charts/kubernetes-zerotier-bridge)**
 * **[postgresql-migration](https://github.com/robyrobot/helm-charts/tree/main/charts/postgresql-migration)**
+* **[elasticsearch-migration](https://github.com/robyrobot/helm-charts/tree/main/charts/elastic-migration)**
