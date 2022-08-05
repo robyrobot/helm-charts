@@ -1,0 +1,9 @@
+This chart starts elasticsearch/opensearch index replication using elasticdum
+
+stop the replication with:
+
+helm -n {{ .Release.Namespace }} uninstall {{ .Release.Name }}
+
+Comments, ideas and critics are welcome ;)
+
+Happy helming!
