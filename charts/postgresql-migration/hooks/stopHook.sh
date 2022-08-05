@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # clean up script
 # delete bucardo schema in all databases
 # delete temporary primarykey added column
@@ -8,10 +6,18 @@
 {{- $primaryKey := .Values.bucardo.fixMissingPrimaryKey.primaryKey | default "__pk__"}}
 
 # pgpass file
-#export PGPASSFILE=/media/bucardo/.pgpass
+export PGPASSFILE=/tmp/.pgpass
 
-# cd to working folder
-cd /media/bucardo
+[ -e "$PGPASSFILE" ] || {
+  info "create pgpass file"
+  cat <<EOF > /tmp/.pgpass && chmod 600 /tmp/.pgpass
+{{- range .Values.bucardo.syncs }}
+{{- range concat .sources .targets }}
+{{ .dbhost }}:{{ .dbport | default "5432" }}:{{ .dbname }}:{{ .dbuser }}:{{ .dbpass | replace ":" "\\:" }}
+{{- end }}
+{{- end }}
+EOF
+}
 
 {{- range .Values.bucardo.syncs }}
 

@@ -31,58 +31,42 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          livenessProbe: 
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            exec:
-              command:
-                - pg_isready
-          readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            exec:
-              command:
-                - pg_isready
+          #livenessProbe: 
+            # initialDelaySeconds: 5
+            # periodSeconds: 10
+            # exec:
+            #   command:
+            #     - pg_isready
+          #readinessProbe: 
+            # initialDelaySeconds: 5
+            # periodSeconds: 10
+            # exec:
+            #   command:
+            #     - pg_isready
           lifecycle:
             preStop:
               exec:
                 command: 
                 - /bin/bash
                 - -c
-                - /media/bucardo/stopHook.sh
+                - |
+                  source /bucardo/hooks/stopHook.sh
                   
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: working
-              mountPath: /media/bucardo/
+            - name: scripts
+              mountPath: /bucardo/scripts/
+            - name: hooks
+              mountPath: /bucardo/hooks/
       terminationGracePeriodSeconds: {{ .Values.bucardo.gracePeriodSec | default 60 }}
-      initContainers:
-        - name: copy
-          image: busybox
-          command: 
-            - sh
-            - -c
-            - |
-                # copy scripts
-                cp /config/*.sh /media/bucardo/
-                chmod +x /media/bucardo/*.sh
-          
-          volumeMounts:
-          - mountPath: /config/bucardo.sh
-            subPath: bucardo.sh
-            name: config
-          - mountPath: /config/stopHook.sh
-            subPath: stopHook.sh
-            name: config
-          - mountPath: /media/bucardo/
-            name: working
       volumes:
-        - name: working
-          emptyDir: {} 
-        - name: config
+        - name: scripts
           configMap:
-            name: {{ include "postgresql-migration.fullname" . }}-configmap
+            name: {{ include "postgresql-migration.fullname" . }}-cm-scripts
+        - name: hooks
+          configMap:
+            name: {{ include "postgresql-migration.fullname" . }}-cm-hooks
         
       {{- with .Values.nodeSelector }}
       nodeSelector:

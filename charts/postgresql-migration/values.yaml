@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/robyrobot/bucardo_docker_image
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v5.6.0-nj-3"
+  #tag: "v5.6.0-nj-5"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -20,6 +20,7 @@ bucardo: {}
   # syncs:
   #   - name: test1
   #     onetimecopy: 1 # ref: https://bucardo.org/Bucardo/operations/onetimecopy
+  #     parallel: 5 # define concurrency for pg_dump, pg_restore. Default is 2
   #     sources:
   #     - name: test1        
   #       dbname: test1
@@ -34,11 +35,16 @@ bucardo: {}
   #       dbhost: host2.example.com
   #       dbuser: postgres
   #       dbpass: password
+  #       blobs:
+  #         enabled: true
+  #         blobs_block_size: 2000
+  #         blobs_role: fhir_user
   #       # if enabled overwrite the target database with a dump from the source dropping all the specified schemas
   #       # this ensure the source and target db has the same schema.
   #       overwrite: 
   #          enabled: true
-  #          dumpBlobs: true # if true, it will copy source data too
+  #          clone: true # if true, it will copy source data too (but not blobs)
+  #          blobs: true # if true, it will try to copy all large object found in the catalog of the source db
   #          schemas:
   #            - public
   #       postAction:
