@@ -9,20 +9,24 @@
 export PGPASSFILE=/tmp/.pgpass
 
 [ -e "$PGPASSFILE" ] || {
-  info "create pgpass file"
-  cat <<EOF > /tmp/.pgpass && chmod 600 /tmp/.pgpass
+cat <<EOF > /tmp/.pgpass && chmod 600 /tmp/.pgpass
 {{- range .Values.bucardo.syncs }}
-{{- range concat .sources .targets }}
+{{- range .sources }}
 {{ .dbhost }}:{{ .dbport | default "5432" }}:{{ .dbname }}:{{ .dbuser }}:{{ .dbpass | replace ":" "\\:" }}
+{{- end }}
+{{- range .targets }}
+{{ .dbhost }}:{{ .dbport | default "5432" }}:{{ .dbname }}:{{ .dbuser }}:{{ .dbpass | replace ":" "\\:" }}
+{{ .dbhost }}:{{ .dbport | default "5432" }}:{{ .dbname }}:{{ .adminUser }}:{{ .adminPass | replace ":" "\\:" }}
 {{- end }}
 {{- end }}
 EOF
 }
 
+
 {{- range .Values.bucardo.syncs }}
 
 {{- range concat .sources .targets }}
-psql --host "{{ .dbhost }}" -U "{{ .dbuser }}" -d "{{ .dbname }}" <<EOF
+psql --host "{{ .dbhost }}" -U "{{ .adminUser | default .dbuser }}" -d "{{ .dbname }}" <<EOF
 DROP SCHEMA IF EXISTS bucardo CASCADE;
 
 -- remove temporary added primary keys

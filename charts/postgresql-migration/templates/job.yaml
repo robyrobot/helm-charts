@@ -1,18 +1,17 @@
-apiVersion: apps/v1
-kind: Deployment
+# apiVersion: apps/v1
+# kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: {{ include "postgresql-migration.fullname" . }}
   labels:
     {{- include "postgresql-migration.labels" . | nindent 4 }}
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      {{- include "postgresql-migration.selectorLabels" . | nindent 6 }}
   template:
-    metadata:
-      {{- with .Values.podAnnotations }}
+    metadata:      
       annotations:
+        checksum/scripts: {{ include (print $.Template.BasePath "/cm-scripts.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
@@ -25,12 +24,20 @@ spec:
       serviceAccountName: {{ include "postgresql-migration.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      containers:
+      containers:        
         - name: {{ .Chart.Name }}-bucardo
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # lifecycle:
+          #   preStop:
+          #     exec:
+          #       command: 
+          #       - /bin/bash
+          #       - -c
+          #       - |
+          #         source /bucardo/hooks/stopHook.sh
           #livenessProbe: 
             # initialDelaySeconds: 5
             # periodSeconds: 10
@@ -43,30 +50,24 @@ spec:
             # exec:
             #   command:
             #     - pg_isready
-          lifecycle:
-            preStop:
-              exec:
-                command: 
-                - /bin/bash
-                - -c
-                - |
-                  source /bucardo/hooks/stopHook.sh
+
                   
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: scripts
               mountPath: /bucardo/scripts/
-            - name: hooks
-              mountPath: /bucardo/hooks/
-      terminationGracePeriodSeconds: {{ .Values.bucardo.gracePeriodSec | default 60 }}
+            # - name: hooks
+            #   mountPath: /bucardo/hooks/
+      #terminationGracePeriodSeconds: {{ .Values.bucardo.gracePeriodSec | default 60 }}
+      restartPolicy: Never
       volumes:
         - name: scripts
           configMap:
             name: {{ include "postgresql-migration.fullname" . }}-cm-scripts
-        - name: hooks
-          configMap:
-            name: {{ include "postgresql-migration.fullname" . }}-cm-hooks
+        # - name: hooks
+        #   configMap:
+        #     name: {{ include "postgresql-migration.fullname" . }}-cm-hooks
         
       {{- with .Values.nodeSelector }}
       nodeSelector:

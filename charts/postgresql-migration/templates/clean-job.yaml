@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-clean-job"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-delete,post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      annotations:
+        checksum/hooks: {{ include (print $.Template.BasePath "/cm-hooks.yaml") . | sha256sum }}
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: pre-delete-job
+        image: "bitnami/postgresql:14"
+        command:
+        - /bin/bash
+        - -c
+        - |
+            source /bucardo/hooks/stopHook.sh
+        volumeMounts:
+        - name: hooks
+          mountPath: /bucardo/hooks/
+      volumes:
+      - name: hooks
+        configMap:
+            name: {{ include "postgresql-migration.fullname" . }}-cm-hooks

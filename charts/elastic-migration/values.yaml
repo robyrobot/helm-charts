@@ -21,7 +21,7 @@ elasticdump:
   syncs:
     - name: "myindices"
       # jobs: how many elasticdump task to run concurrently. Under the hood it uses GNU parallel. 
-      jobs: 10
+      jobs: 20
       # retryAttempts: elasticdump retryAttempts option
       retryAttempts: 5
       # throttleInterval: elasticsearch throttleInterval option

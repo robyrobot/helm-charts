@@ -22,10 +22,10 @@ while [ true ]; do
     SOURCE_COUNT=${SOURCE_COUNT:-0}
     TARGET_COUNT=${TARGET_COUNT:-0}
  
-    [ "$SOURCE_COUNT" != "0" ] && [ "$TARGET_COUNT" -gt "0" ] && [ "$SOURCE_COUNT" != "$TARGET_COUNT" ] && {
+    [ "$SOURCE_COUNT" != "0" ] && {
       PERC_INT=$(awk -vn=$TARGET_COUNT -vt=$SOURCE_COUNT 'BEGIN{printf("%.0f\n", n/t*100)}')
       PERC_2=$(awk -vn=$TARGET_COUNT -vt=$SOURCE_COUNT 'BEGIN{printf("%.2f\n", n/t*100)}')
-      info "\t\t$(progress $PERC_INT "$PERC_2 % [$SOURCE_IDX ($SOURCE_COUNT/$TARGET_COUNT)]")"
+      info "$(progress $PERC_INT "$PERC_2 % [$SOURCE_IDX ($SOURCE_COUNT/$TARGET_COUNT)]")"
     }
   done
   
