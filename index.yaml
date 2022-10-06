@@ -12,6 +12,16 @@ entries:
     urls:
     - https://github.com/robyrobot/helm-charts/releases/download/elastic-migration-1.0.0/elastic-migration-1.0.0.tgz
     version: 1.0.0
+  kubernetes-image-puller:
+  - apiVersion: v1
+    created: "2022-10-06T09:17:51.246988197Z"
+    description: The kubernetes image puller downloads che images ahead of time for
+      faster workspace startup
+    digest: 17399dcc175a541f431b591516294279de4533188ffa2c21c454dbeec92702b3
+    name: kubernetes-image-puller
+    urls:
+    - https://github.com/robyrobot/helm-charts/releases/download/kubernetes-image-puller-1.0.0/kubernetes-image-puller-1.0.0.tgz
+    version: 1.0.0
   kubernetes-zerotier-bridge:
   - apiVersion: v1
     appVersion: "1.0"
@@ -53,4 +63,4 @@ entries:
     urls:
     - https://github.com/robyrobot/helm-charts/releases/download/postgresql-migration-0.1.0/postgresql-migration-0.1.0.tgz
     version: 0.1.0
-generated: "2022-08-05T07:21:01.273186832Z"
+generated: "2022-10-06T09:17:51.438910085Z"
