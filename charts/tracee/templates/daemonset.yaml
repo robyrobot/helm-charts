@@ -1,0 +1,99 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "tracee.fullname" . }}
+  labels:
+    {{- include "tracee.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "tracee.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tracee.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "tracee.serviceAccountName" . }}
+      hostPID: {{ .Values.hostPID }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: tracee
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --filter set=signatures
+          {{- if .Values.metrics.enabled }}
+            - --metrics
+          {{- end }}
+            - --output json
+          {{- if .Values.postee.webhook }}
+            - --output webhook:{{ .Values.postee.webhook }}
+          {{- end }}
+          env:
+            - name: LIBBPFGO_OSRELEASE_FILE
+              value: /etc/os-release-host
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: tmp-tracee
+              mountPath: /tmp/tracee
+            - name: etc-os-release
+              mountPath: /etc/os-release-host
+              readOnly: true
+            {{- if .Values.signatures.config }}
+            - name: tracee-config
+              mountPath: /tracee/signatures/signatures.yaml
+              subPath: signatures.yaml
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: tmp-tracee
+          hostPath:
+            path: /tmp/tracee
+        - name: etc-os-release
+          hostPath:
+            path: /etc/os-release
+        {{- if .Values.signatures.config }}
+        - name: tracee-config
+          configMap:
+            name: tracee-config
+            items:
+              - key: signatures.yaml
+                path: signatures.yaml
+        {{- end }}
+{{- if .Values.signatures.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracee-config
+  labels:
+    {{- include "tracee.labels" . | nindent 4 }}
+data:
+  signatures.yaml: |-
+    {{- toYaml .Values.signatures.config | nindent 4 }}
+{{- end }}

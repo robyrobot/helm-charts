@@ -1,0 +1,14 @@
+apiVersion: v2
+appVersion: 0.12.0
+dependencies:
+- condition: postee.enabled
+  name: postee
+  repository: '@aqua'
+  version: ~2.9.0
+description: Linux Runtime Security and Forensics using eBPF
+home: https://aquasecurity.github.io/tracee/v0.9/
+name: tracee
+sources:
+- https://github.com/aquasecurity/tracee
+type: application
+version: 0.12.0

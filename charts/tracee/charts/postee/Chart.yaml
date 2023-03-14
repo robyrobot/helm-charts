@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: v2.9.0
+description: A Helm chart for Postee
+keywords:
+- aquasecurity
+- postee
+name: postee
+sources:
+- https://github.com/aquasecurity/postee
+type: application
+version: v2.9.0
